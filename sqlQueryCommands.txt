@@ -1,0 +1,75 @@
+// Retrive all permission by specific role name
+SELECT rp.permission_id, p.name AS permission_name, rp.read_access, rp.write_access
+FROM role r
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+WHERE r.name = :role_name;
+
+
+// Retrive all the permission of user by user email.
+SELECT rp.permission_id, p.name AS permission_name, p.type as permission_type, r.name as role, MAX(rp.read_access) AS read_access, MAX(rp.write_access) AS write_access
+FROM user u
+JOIN user_role ur ON u.id = ur.user_id
+JOIN role r ON ur.role_id = r.id
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+WHERE u.email = :userEmail
+GROUP BY rp.permission_id, p.name;
+
+
+// Find specific user has the specific permission
+SELECT rp.permission_id, p.name AS permission_name,
+    CASE
+        WHEN SUM(rp.read_access) > 0 THEN 1  -- If there is any true value for read_access
+        ELSE 0  -- Otherwise, take false
+    END AS read_access,
+    CASE
+        WHEN SUM(rp.write_access) > 0 THEN 1  -- If there is any true value for write_access
+        ELSE 0  -- Otherwise, take false
+    END AS write_access
+FROM user u
+JOIN user_role ur ON u.id = ur.user_id
+JOIN role r ON ur.role_id = r.id
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+WHERE u.email = :user_email AND p.name = :permissionName
+GROUP BY rp.permission_id, p.name;
+
+
+
+// Check specific user has the specific permission's write access
+SELECT 
+    CASE
+        WHEN SUM(rp.write_access) > 0 THEN 1  -- If there is any true value for read_access
+        ELSE 0  -- Otherwise, take false
+    END AS has_read_access
+FROM user u
+JOIN user_role ur ON u.id = ur.user_id
+JOIN role r ON ur.role_id = r.id
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+WHERE u.email = :user_email AND p.name =  :permissionName;
+
+
+// Check specific user has the specific permission's Read access
+SELECT 
+    CASE
+        WHEN SUM(rp.write_access) > 0 THEN 1  -- If there is any true value for read_access
+        ELSE 0  -- Otherwise, take false
+    END AS has_read_access
+FROM user u
+JOIN user_role ur ON u.id = ur.user_id
+JOIN role r ON ur.role_id = r.id
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+WHERE u.email = :user_email AND p.name =  :permissionName;
+
+
+//Retrieve All Permissions for All Roles
+SELECT r.name AS role_name, rp.permission_id, p.name AS permission_name, rp.read_access, rp.write_access
+FROM role r
+JOIN role_permission rp ON r.id = rp.role_id
+JOIN permission p ON rp.permission_id = p.id
+ORDER BY r.name, rp.permission_id;
+
+
